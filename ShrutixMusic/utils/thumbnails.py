@@ -1,11 +1,13 @@
 import os
 import re
+
 import aiofiles
 import aiohttp
-from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 from unidecode import unidecode
-from youtubesearchpython.__future__ import VideosSearch
-from ShrutixMusic import app
+from py_yt import VideosSearch
+
+from ShrutixMusic import nand
 from config import YOUTUBE_IMG_URL
 
 
@@ -25,14 +27,6 @@ def clear(text):
         if len(title) + len(i) < 60:
             title += " " + i
     return title.strip()
-
-
-async def get_qthumb(videoid):
-    try:
-        url = f"https://img.youtube.com/vi/{videoid}/maxresdefault.jpg"
-        return url
-    except Exception:
-        return YOUTUBE_IMG_URL
 
 
 async def get_thumb(videoid):
@@ -70,25 +64,16 @@ async def get_thumb(videoid):
                     await f.write(await resp.read())
                     await f.close()
 
-        # colors = ["white", "red", "orange", "yellow", "green", "cyan", "azure", "blue", "violet", "magenta", "pink"]
-        # border = random.choice(colors)
         youtube = Image.open(f"cache/thumb{videoid}.png")
         image1 = changeImageSize(1280, 720, youtube)
-        bg_bright = ImageEnhance.Brightness(image1)
-        bg_logo = bg_bright.enhance(1.1)
-        bg_contra = ImageEnhance.Contrast(bg_logo)
-        bg_logo = bg_contra.enhance(1.1)
-        # logox = ImageOps.expand(bg_logo, border=7, fill=f"{border}")
-        background = changeImageSize(1280, 720, bg_logo)
-        # image2 = image1.convert("RGBA")
-        # background = image2.filter(filter=ImageFilter.BoxBlur(1))
-        # enhancer = ImageEnhance.Brightness(background)
-        # background = enhancer.enhance(0.9)
-        # draw = ImageDraw.Draw(background)
-        # arial = ImageFont.truetype("VIPMUSIC/assets/font2.ttf", 30)
-        # font = ImageFont.truetype("VIPMUSIC/assets/font.ttf", 30)
-        # draw.text((1110, 8), unidecode(app.name), fill="white", font=arial)
-        """
+        image2 = image1.convert("RGBA")
+        background = image2.filter(filter=ImageFilter.BoxBlur(10))
+        enhancer = ImageEnhance.Brightness(background)
+        background = enhancer.enhance(0.5)
+        draw = ImageDraw.Draw(background)
+        arial = ImageFont.truetype("ShrutixMusic/assets/font2.ttf", 30)
+        font = ImageFont.truetype("ShrutixMusic/assets/font.ttf", 30)
+        draw.text((1110, 8), unidecode(nand.name), fill="white", font=arial)
         draw.text(
             (1, 1),
             f"{channel} | {views[:23]}",
@@ -125,7 +110,6 @@ async def get_thumb(videoid):
             (1, 1, 1),
             font=arial,
         )
-        """
         try:
             os.remove(f"cache/thumb{videoid}.png")
         except:
